@@ -21,11 +21,3 @@ The API is documented in **Postman**. Click below to view the complete documenta
 
 ---
 
-## Installation
-
-### Prerequisites
-
-- PHP 8.0 or higher
-- MySQL or MariaDB
-- Composer (for dependency management)
-- Postman (for API testing)
