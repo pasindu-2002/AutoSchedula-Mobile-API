@@ -17,7 +17,7 @@
 
 The API is documented in **Postman**. Click below to view the complete documentation:
 
-[![View in Postman](https://run.pstmn.io/button.svg)](https://www.postman.com/link-to-docs)
+[![View in Postman](https://run.pstmn.io/button.svg)](https://documenter.getpostman.com/view/40004001/2sAYBYepsA)
 
 ---
 
