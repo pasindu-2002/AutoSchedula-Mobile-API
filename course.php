@@ -1,4 +1,5 @@
 <?php
+
 function getDbConnection() {
     $host = "localhost";
     $dbusername = "root";
@@ -14,12 +15,14 @@ function getDbConnection() {
     }
 }
 
+
 function jsonResponse($status, $message, $data = []) {
     http_response_code($status);
     header('Content-Type: application/json');
     echo json_encode(["message" => $message, "data" => $data]);
     exit;
 }
+
 
 function getCourse($course_code) {
     $pdo = getDbConnection();
@@ -38,16 +41,31 @@ function getCourse($course_code) {
     }
 }
 
+
 function insertCourse($data) {
     $pdo = getDbConnection();
     try {
+        // Check if course_code already exists
+        $stmt = $pdo->prepare("SELECT course_code FROM course_tbl WHERE course_code = ?");
+        $stmt->execute([$data['course_code']]);
+        $existing = $stmt->fetch(PDO::FETCH_ASSOC);
+
+        if ($existing) {
+            jsonResponse(409, "Course with this code already exists");
+            return;
+        }
+
+        // Insert the course data
         $stmt = $pdo->prepare("INSERT INTO course_tbl (course_code, course_name, school) VALUES (?, ?, ?)");
-        $stmt->execute([$data['course_code'], $data['course_name'], $data['school']]); 
+        $stmt->execute([$data['course_code'], $data['course_name'], $data['school']]);
+
         jsonResponse(201, "Course added successfully");
     } catch (PDOException $e) {
         jsonResponse(500, "Insert failed", ["details" => $e->getMessage()]);
     }
 }
+
+
 
 if ($_SERVER['REQUEST_METHOD'] === 'GET') {
     if (isset($_GET['course_code'])) {
@@ -67,5 +85,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'GET') {
 } else {
     jsonResponse(405, "Invalid request method. Use GET or POST.");
 }
+
 
 ?>

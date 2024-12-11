@@ -24,7 +24,7 @@ function jsonResponse($status, $message, $data = []) {
 function getLecturer($emp_no, $password) {
     $pdo = getDbConnection();
     try {
-        $stmt = $pdo->prepare("SELECT full_name, email, password FROM lecturers WHERE emp_no = ?");
+        $stmt = $pdo->prepare("SELECT full_name, email, password FROM lecturers_tbl WHERE emp_no = ?");
         $stmt->execute([$emp_no]);
         $row = $stmt->fetch(PDO::FETCH_ASSOC);
 
@@ -41,14 +41,29 @@ function getLecturer($emp_no, $password) {
 function insertLecturer($data) {
     $pdo = getDbConnection();
     try {
+        // Check if emp_no already exists
+        $stmt = $pdo->prepare("SELECT emp_no FROM lecturers_tbl WHERE emp_no = ?");
+        $stmt->execute([$data['emp_no']]);
+        $existing = $stmt->fetch(PDO::FETCH_ASSOC);
+
+        if ($existing) {
+            jsonResponse(409, "Lecturer with this employee number already exists");
+            return;
+        }
+
+        // Hash the password
         $hashed_password = password_hash($data['password'], PASSWORD_BCRYPT);
-        $stmt = $pdo->prepare("INSERT INTO lecturers (emp_no, full_name, email, password) VALUES (?, ?, ?, ?)");
+
+        // Insert the lecturer data
+        $stmt = $pdo->prepare("INSERT INTO lecturers_tbl (emp_no, full_name, email, password) VALUES (?, ?, ?, ?)");
         $stmt->execute([$data['emp_no'], $data['full_name'], $data['email'], $hashed_password]);
+
         jsonResponse(201, "Lecturer added successfully");
     } catch (PDOException $e) {
         jsonResponse(500, "Insert failed", ["details" => $e->getMessage()]);
     }
 }
+
 
 if ($_SERVER['REQUEST_METHOD'] === 'GET') {
     if (isset($_GET['emp_no'], $_GET['password'])) {
