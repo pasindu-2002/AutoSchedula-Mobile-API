@@ -64,6 +64,61 @@ function insertStudent($data) {
     }
 }
 
+function deleteStudent($stu_id) {
+    $pdo = getDbConnection();
+    try {
+        $stmt = $pdo->prepare("DELETE FROM student_tbl WHERE stu_id = ?");
+        $stmt->execute([$stu_id]);
+
+        if ($stmt->rowCount() > 0) {
+            jsonResponse(200, "Student deleted successfully");
+        } else {
+            jsonResponse(404, "Student not found");
+        }
+    } catch (PDOException $e) {
+        jsonResponse(500, "Delete failed", ["details" => $e->getMessage()]);
+    }
+}
+
+function updateStudent($stu_id, $data) {
+    $pdo = getDbConnection();
+    try {
+        $fields = [];
+        $values = [];
+
+        if (isset($data['full_name'])) {
+            $fields[] = "full_name = ?";
+            $values[] = $data['full_name'];
+        }
+
+        if (isset($data['email'])) {
+            $fields[] = "email = ?";
+            $values[] = $data['email'];
+        }
+
+        if (isset($data['password'])) {
+            $fields[] = "password = ?";
+            $values[] = password_hash($data['password'], PASSWORD_BCRYPT);
+        }
+
+        if (empty($fields)) {
+            jsonResponse(400, "No fields to update");
+        }
+
+        $values[] = $stu_id;
+
+        $stmt = $pdo->prepare("UPDATE student_tbl SET " . implode(", ", $fields) . " WHERE stu_id = ?");
+        $stmt->execute($values);
+
+        if ($stmt->rowCount() > 0) {
+            jsonResponse(200, "Student updated successfully");
+        } else {
+            jsonResponse(404, "Student not found or no changes made");
+        }
+    } catch (PDOException $e) {
+        jsonResponse(500, "Update failed", ["details" => $e->getMessage()]);
+    }
+}
 
 if ($_SERVER['REQUEST_METHOD'] === 'GET') {
     if (isset($_GET['stu_id'], $_GET['password'])) {
@@ -73,15 +128,28 @@ if ($_SERVER['REQUEST_METHOD'] === 'GET') {
         jsonResponse(400, "Please provide stu_id and password");
     }
 } elseif ($_SERVER['REQUEST_METHOD'] === 'POST') {
-	$input = $_SERVER['REQUEST_METHOD'] === 'POST' ? json_decode(file_get_contents('php://input'), true) : $_GET;
+    $input = json_decode(file_get_contents('php://input'), true);
 
-	if (!isset($input['stu_id'], $input['full_name'], $input['email'], $input['password'])) {
-		jsonResponse(400, "Missing required fields");
-	}
-	
-	insertStudent($input);
+    if (!isset($input['stu_id'], $input['full_name'], $input['email'], $input['password'])) {
+        jsonResponse(400, "Missing required fields");
+    }
+
+    insertStudent($input);
+} elseif ($_SERVER['REQUEST_METHOD'] === 'PUT') {
+    $input = json_decode(file_get_contents('php://input'), true);
+
+    if (!isset($_GET['stu_id'])) {
+        jsonResponse(400, "Please provide stu_id");
+    }
+
+    updateStudent($_GET['stu_id'], $input);
+} elseif ($_SERVER['REQUEST_METHOD'] === 'DELETE') {
+    if (!isset($_GET['stu_id'])) {
+        jsonResponse(400, "Please provide stu_id");
+    }
+
+    deleteStudent($_GET['stu_id']);
 } else {
-    jsonResponse(405, "Invalid request method. Use GET or POST.");
+    jsonResponse(405, "Invalid request method. Use GET, POST, PUT, or DELETE.");
 }
-
 ?>
