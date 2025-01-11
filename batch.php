@@ -1,5 +1,8 @@
 <?php
+<<<<<<< HEAD
 
+=======
+>>>>>>> c61e340049282c25ad665810b52714cdca6420fa
 function getDbConnection() {
     $host = "localhost";
     $dbusername = "root";
@@ -22,24 +25,38 @@ function jsonResponse($status, $message, $data = []) {
     exit;
 }
 
+<<<<<<< HEAD
 // Get batch details by batch_code
 function getBatch($batch_code) {
     $pdo = getDbConnection();
     try {
         $stmt = $pdo->prepare("SELECT batch_code, course_code, course_director FROM batch_tbl WHERE batch_code = ?");
+=======
+function getCourse($batch_code) {
+    $pdo = getDbConnection();
+    try {
+        $stmt = $pdo->prepare("SELECT course_code, course_director FROM batch_tbl WHERE batch_code = ?");
+>>>>>>> c61e340049282c25ad665810b52714cdca6420fa
         $stmt->execute([$batch_code]);
         $row = $stmt->fetch(PDO::FETCH_ASSOC);
 
         if ($row) {
+<<<<<<< HEAD
             return $row;
         } else {
             jsonResponse(404, "Batch not found");
+=======
+            return ["module_name" => $row['module_name'], "course_code" => $row['course_code'], "course_director" => $row['course_director'],];
+        } else {
+            jsonResponse(404, "Course not found or invalid password");
+>>>>>>> c61e340049282c25ad665810b52714cdca6420fa
         }
     } catch (PDOException $e) {
         jsonResponse(500, "Query failed", ["details" => $e->getMessage()]);
     }
 }
 
+<<<<<<< HEAD
 // Insert a new batch
 function insertBatch($data) {
     $pdo = getDbConnection();
@@ -58,12 +75,20 @@ function insertBatch($data) {
         $stmt = $pdo->prepare("INSERT INTO batch_tbl (batch_code, course_code, course_director) VALUES (?, ?, ?)");
         $stmt->execute([$data['batch_code'], $data['course_code'], $data['course_director']]);
 
+=======
+function insertCourse($data) {
+    $pdo = getDbConnection();
+    try {
+        $stmt = $pdo->prepare("INSERT INTO batch_tbl (batch_code, course_code, course_director) VALUES (?, ?, ?)");
+        $stmt->execute([$data['batch_code'], $data['course_code'], $data['course_director']]);
+>>>>>>> c61e340049282c25ad665810b52714cdca6420fa
         jsonResponse(201, "Batch added successfully");
     } catch (PDOException $e) {
         jsonResponse(500, "Insert failed", ["details" => $e->getMessage()]);
     }
 }
 
+<<<<<<< HEAD
 // Update batch details
 function updateBatch($batch_code, $data) {
     $pdo = getDbConnection();
@@ -149,6 +174,25 @@ if ($_SERVER['REQUEST_METHOD'] === 'GET') {
     deleteBatch($_GET['batch_code']);
 } else {
     jsonResponse(405, "Invalid request method. Use GET, POST, PUT, or DELETE.");
+=======
+if ($_SERVER['REQUEST_METHOD'] === 'GET') {
+    if (isset($_GET['batch_code'])) {
+        $result = getCourse($_GET['batch_code']);
+        jsonResponse(200, "Module fetched successfully", $result);
+    } else {
+        jsonResponse(400, "Please provide course code or invalid");
+    }
+} elseif ($_SERVER['REQUEST_METHOD'] === 'POST') {
+	$input = $_SERVER['REQUEST_METHOD'] === 'POST' ? json_decode(file_get_contents('php://input'), true) : $_GET;
+
+	if (!isset($input['batch_code'], $input['module_hours'], $input['module_name'])) {
+		jsonResponse(400, "Missing required fields");
+	}
+	
+	insertCourse($input);
+} else {
+    jsonResponse(405, "Invalid request method. Use GET or POST.");
+>>>>>>> c61e340049282c25ad665810b52714cdca6420fa
 }
 
 ?>

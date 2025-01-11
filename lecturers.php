@@ -53,8 +53,11 @@ function insertLecturer($data) {
 
         // Hash the password
         $hashed_password = password_hash($data['password'], PASSWORD_BCRYPT);
+<<<<<<< HEAD
 
         // Insert the lecturer data
+=======
+>>>>>>> c61e340049282c25ad665810b52714cdca6420fa
         $stmt = $pdo->prepare("INSERT INTO lecturers_tbl (emp_no, full_name, email, password) VALUES (?, ?, ?, ?)");
         $stmt->execute([$data['emp_no'], $data['full_name'], $data['email'], $hashed_password]);
 
